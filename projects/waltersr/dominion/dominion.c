@@ -643,126 +643,77 @@ int getCost(int cardNumber)
   return -1;
 }
 
-int adventure(struct gameState *state)
+//Broken out function for adventurer card
+//Includes bug for Assignment 2: while loop sig should be (drawntreasure<2)
+void adventurerEffect(int card, int choice1, int choice2, int choice3, struct gameState *state, int handPos, int *bonus)
 {
-	int drawntreasure = 0;
-  	int currentPlayer = whoseTurn(state);
-	int cardDrawn;
-	int z = 0;
-	int temphand[MAX_HAND];
 
-	while(drawntreasure<2){
-		if (state->deckCount[currentPlayer] <=1){//if the deck is empty we need to shuffle discard and add to deck
-		  shuffle(currentPlayer, state);
-		}
-		drawCard(currentPlayer, state);
-		cardDrawn = state->hand[currentPlayer][state->handCount[currentPlayer]-1];//top card of hand is most recently drawn card.
-		if (cardDrawn == copper || cardDrawn == silver || cardDrawn == gold)
-		  drawntreasure++;
-		else{
-		  temphand[z]=cardDrawn;
-		  state->handCount[currentPlayer]--; //this should just remove the top card (the most recently drawn one).
-		  z++;
-		}
-	      }
+  int drawntreasure = 0;
+  int temphand[MAX_HAND];
+  int cardDrawn;
+  int z = 0;
+  int currentPlayer = whoseTurn(state);
 
-	      while(z-1>=1){
-		state->discard[currentPlayer][state->discardCount[currentPlayer]++]=temphand[z-1]; // discard all cards in play that have been drawn
-		z=z-1;
-	      }
-	      return 0;
+  while(drawntreasure<=2){
+	if (state->deckCount[currentPlayer] <1){//if the deck is empty we need to shuffle discard and add to deck
+	  shuffle(currentPlayer, state);
+	}
+	drawCard(currentPlayer, state);
+	cardDrawn = state->hand[currentPlayer][state->handCount[currentPlayer]-1];//top card of hand is most recently drawn card.
+	if (cardDrawn == copper || cardDrawn == silver || cardDrawn == gold)
+	  drawntreasure++;
+	else{
+	  temphand[z]=cardDrawn;
+	  state->handCount[currentPlayer]--; //this should just remove the top card (the most recently drawn one).
+	  z++;
+	}
+      }
+      while(z-1>=0){
+	state->discard[currentPlayer][state->discardCount[currentPlayer]++]=temphand[z-1]; // discard all cards in play that have been drawn
+	z=z-1;
+      }
 }
 
-int smith(struct gameState *state, int handPos)
+//Broken out funciton for smithy card
+//Includes bug for Assignment 2: for loop sig should read (i = 0; i < 3; i++) 
+//NOTE: this bug is fixed for assignment 4 for useful test checking
+void smithyEffect(int card, int choice1, int choice2, int choice3, struct gameState *state, int handPos, int *bonus)
 {
   int i;
   int currentPlayer = whoseTurn(state);
 
-      for (i = 0; i < 2; i++)
+  //+3 Cards
+      for (i = 0; i < 3; i++)
 	{
 	  drawCard(currentPlayer, state);
 	}
 			
       //discard card from hand
       discardCard(handPos, currentPlayer, state, 0);
-      return 0;
 }
 
-int barn(struct gameState *state, int choice1)
+//Broken out function for great hall card
+void greathallEffect(int card, int choice1, int choice2, int choice3, struct gameState *state, int handPos, int *bonus)
 {
 
-  int currentPlayer = whoseTurn(state);
+   int currentPlayer = whoseTurn(state);
 
-      state->numBuys++;//Increase buys by 1!
-      if (choice1 > 0){//Boolean true or going to discard an estate
-	int p = 0;//Iterator for hand!
-	int card_not_discarded = 1;//Flag for discard set!
-	while(card_not_discarded){
-	  if (state->hand[currentPlayer][p] == estate){//Found an estate card!
-	    state->coins += 4;//Add 4 coins to the amount of coins
-	    state->discard[currentPlayer][state->discardCount[currentPlayer]] = state->hand[currentPlayer][p];
-	    state->discardCount[currentPlayer]++;
-	    for (;p < state->handCount[currentPlayer]; p++){
-	      state->hand[currentPlayer][p] = state->hand[currentPlayer][p+1];
-	    }
-	    state->hand[currentPlayer][state->handCount[currentPlayer]] = -1;
-	    state->handCount[currentPlayer]--;
-	    card_not_discarded = 0;//Exit the loop
-	  }
-	  else if (p > state->handCount[currentPlayer]){
-	    if(DEBUG) {
-	      printf("No estate cards in your hand, invalid choice\n");
-	      printf("Must gain an estate if there are any\n");
-	    }
-	    if (supplyCount(estate, state) > 0){
-	      gainCard(estate, state, 0, currentPlayer);
-	      //state->supplyCount[estate]--;//Decrement estates
-	      if (supplyCount(estate, state) == 0){
-		isGameOver(state);
-	      }
-	    }
-	    card_not_discarded = 0;//Exit the loop
-	  }
-			    
-	  else{
-	    p++;//Next card
-	  }
-	}
-      }
-			    
-      else{
-	if (supplyCount(estate, state) > 0){
-	  gainCard(estate, state, 0, currentPlayer);//Gain an estate
-	  state->supplyCount[estate]--;//Decrement Estates
-	  if (supplyCount(estate, state) == 0){
-	    isGameOver(state);
-	  }
-	}
-      }
-	    
-      
-      return 0;
-}
-
-int greathall(struct gameState *state, int handPos)
-{
-
-  int currentPlayer = whoseTurn(state);
-
-      drawCard(currentPlayer, state);
+ //+1 Card
+   drawCard(currentPlayer, state);
 			
-      //+1 Actions
-      state->numActions++;
+ //+1 Actions
+   state->numActions++;
 			
-      //discard card from hand
-      discardCard(handPos, currentPlayer, state, 0);
-      return 0;
+ //discard card from hand
+   discardCard(handPos, currentPlayer, state, 0);
 }
 
-int stew(struct gameState *state, int choice1, int choice2, int choice3, int handPos)
+//Broken out function for steward card
+//Includes bug for Assignment 2: choice 2 should be state-> coins + 2
+void stewardEffect(int card, int choice1, int choice2, int choice3, struct gameState *state, int handPos, int *bonus)
 {
 
-  int currentPlayer = whoseTurn(state);
+      int currentPlayer = whoseTurn(state);
 
       if (choice1 == 1)
 	{
@@ -778,13 +729,38 @@ int stew(struct gameState *state, int choice1, int choice2, int choice3, int han
       else
 	{
 	  //trash 2 cards in hand
-	  discardCard(choice2, currentPlayer, state, 0);
+	  discardCard(choice2, currentPlayer, state, 1);
 	  discardCard(choice3, currentPlayer, state, 1);
 	}
 			
       //discard card from hand
       discardCard(handPos, currentPlayer, state, 0);
-      return 0;
+}
+
+//Broken out function for embargo card
+//Includes bug for Assignment 2: first statement should be state->coins + 2
+//NOTE: this bug is fixed for assignment 4 for useful test checking
+void embargoEffect(int card, int choice1, int choice2, int choice3, struct gameState *state, int handPos, int *bonus)
+{
+
+      int currentPlayer = whoseTurn(state);
+
+//+2 Coins
+      state->coins = state->coins + 2;
+			
+      //see if selected pile is in play
+      if ( state->supplyCount[choice1] == -1 )
+	{
+	  //commented out currently to
+	  //avoid a compiler warning as this refactored function has no return value
+	  //return -1;
+	}
+			
+      //add embargo token to selected supply pile
+      state->embargoTokens[choice1]++;
+			
+      //trash card
+      discardCard(handPos, currentPlayer, state, 1);
 }
 
 int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState *state, int handPos, int *bonus)
@@ -811,7 +787,6 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
   switch( card ) 
     {
     case adventurer:
-	adventure(state);
       /*while(drawntreasure<2){
 	if (state->deckCount[currentPlayer] <1){//if the deck is empty we need to shuffle discard and add to deck
 	  shuffle(currentPlayer, state);
@@ -829,8 +804,10 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
       while(z-1>=0){
 	state->discard[currentPlayer][state->discardCount[currentPlayer]++]=temphand[z-1]; // discard all cards in play that have been drawn
 	z=z-1;
-      }
-*/
+      }*/
+      //Above code commented out for Refactor of Assignment 2
+      //call separate function for effect of adventurer card
+      adventurerEffect(card, choice1, choice2, choice3, state, handPos, bonus);
       return 0;
 			
     case council_room:
@@ -975,18 +952,21 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
       return 0;
 		
     case smithy:
+      /*
       //+3 Cards
-      smith(state, handPos);
-/*	for (i = 0; i < 3; i++)
+      for (i = 0; i < 3; i++)
 	{
 	  drawCard(currentPlayer, state);
 	}
 			
       //discard card from hand
       discardCard(handPos, currentPlayer, state, 0);
-*/
+      */
+      //Above code commented out for Refactor of Assignment 2
+      //call separate function for smithy card
+      smithyEffect(card, choice1, choice2, choice3, state, handPos, bonus);
       return 0;
-	
+		
     case village:
       //+1 Card
       drawCard(currentPlayer, state);
@@ -999,8 +979,6 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
       return 0;
 		
     case baron:
-	barn(state, choice1);
-/*
       state->numBuys++;//Increase buys by 1!
       if (choice1 > 0){//Boolean true or going to discard an estate
 	int p = 0;//Iterator for hand!
@@ -1048,13 +1026,12 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
 	}
       }
 	    
-*/
+      
       return 0;
 		
     case great_hall:
+      /*
       //+1 Card
-      greathall(state, handPos);
-/*
       drawCard(currentPlayer, state);
 			
       //+1 Actions
@@ -1062,7 +1039,10 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
 			
       //discard card from hand
       discardCard(handPos, currentPlayer, state, 0);
-*/
+      */
+      //call separate function for great hall card
+      //Above code commented out for Refactor of Assignment 2
+      greathallEffect(card, choice1, choice2, choice3, state, handPos, bonus);
       return 0;
 		
     case minion:
@@ -1117,8 +1097,7 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
       return 0;
 		
     case steward:
-	stew(state, choice1, choice2, choice3, handPos);
-/*
+      /*
       if (choice1 == 1)
 	{
 	  //+2 cards
@@ -1139,9 +1118,11 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
 			
       //discard card from hand
       discardCard(handPos, currentPlayer, state, 0);
-*/
+      //call separate function for effect of adventurer card
+      */
+      //Above code commented out for Refactor of Assignment 2
+      stewardEffect(card, choice1, choice2, choice3, state, handPos, bonus);
       return 0;
-
 		
     case tribute:
       if ((state->discardCount[nextPlayer] + state->deckCount[nextPlayer]) <= 1){
@@ -1295,7 +1276,8 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
       return 0;
 
 		
-    case embargo: 
+    case embargo:
+      /* 
       //+2 Coins
       state->coins = state->coins + 2;
 			
@@ -1309,7 +1291,11 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
       state->embargoTokens[choice1]++;
 			
       //trash card
-      discardCard(handPos, currentPlayer, state, 1);		
+      discardCard(handPos, currentPlayer, state, 1);
+      */		
+      //Above code commented out for Refactor of Assignment 2
+      //call separate function for effect of adventurer card
+      embargoEffect(card, choice1, choice2, choice3, state, handPos, bonus);
       return 0;
 		
     case outpost:

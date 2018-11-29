@@ -39,6 +39,8 @@ int checkSmithy(struct gameState *final, int handPos){
 			initial.hand[p][initial.handCount[p]-1] = initial.deck[p][initial.deckCount[p]-1];
 			initial.deckCount[p]--;
 		}
+		initial.discardCount[p]++;
+		initial.handCount[p]--;
 	}
 	//If deck has less than 3, but discard pile has more than 3, move discard to deck and draw 3
 	else if (initial.discardCount[p] > 3)
@@ -52,7 +54,7 @@ int checkSmithy(struct gameState *final, int handPos){
 		}
 		
 		initial.deckCount[p] = initial.discardCount[p] - 3;
-		initial.discardCount[p] = 0;
+		initial.discardCount[p] = 1;
 	}
 		
 	//Check to make sure smithy card ran
